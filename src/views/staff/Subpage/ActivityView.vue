@@ -1,0 +1,142 @@
+<!-- 活动列表管理 -->
+<template>
+  <div class="ActivityView">
+    <el-table
+      :data="activityList"
+      style="width: 100%"
+    >
+      <el-table-column
+        prop="id"
+        label="ID"
+        width="80"
+      />
+      <el-table-column
+        prop="title"
+        label="标题"
+        width="200"
+      />
+      <el-table-column
+        prop="content"
+        label="内容"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="place"
+        label="地点"
+        width="150"
+      />
+      <el-table-column
+        prop="start_time"
+        label="开始时间"
+        width="180"
+      >
+        <template #default="{ row }">
+          {{ formatDateTime(row.start_time) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="end_time"
+        label="结束时间"
+        width="180"
+      >
+        <template #default="{ row }">
+          {{ formatDateTime(row.end_time) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="max_participants"
+        label="最大参与人数"
+        width="120"
+      />
+    </el-table>
+
+    <el-pagination
+      class="Pagelayer"
+      :total="total"
+      :page-size="pageSize"
+      :current-page="currentPage"
+      layout="prev, pager, next"
+      @current-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    />
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
+import { format } from 'date-fns'
+
+export default {
+  name: 'ActivityView',
+  data() {
+    return {
+      activityList: [],
+      currentPage: 1,
+      pageSize: 10,
+      total: 0
+    }
+  },
+  created() {
+    this.fetchActivities()
+  },
+  methods: {
+    async fetchActivities() {
+      try {
+        const response = await axios.get('http://localhost:8089/api/sysadmin/news/Activitylist', {
+          params: {
+            pageNum: this.currentPage,
+            pageSize: this.pageSize
+          }
+        })
+        this.activityList = response.data.list
+        this.total = response.data.total
+      } catch (error) {
+        console.error('获取活动列表失败:', error)
+        this.$message.error('获取活动列表失败')
+      }
+    },
+    formatDateTime(dateTime) {
+      return dateTime ? format(new Date(dateTime), 'yyyy-MM-dd HH:mm:ss') : ''
+    },
+    handleSizeChange(val) {
+      this.pageSize = val
+      this.fetchActivities()
+    },
+    handleCurrentChange(val) {
+      this.currentPage = val
+      this.fetchActivities()
+    }
+  }
+}
+</script>
+
+<style scoped>
+.ActivityView {
+  padding: 20px;
+  height: 90vh;
+  width: 97%;
+  position: relative;
+  top: 50%;
+  border-radius: 30px;
+  transform: translateY(-50%);
+  transition: all 0.3s ease;
+  margin-left: 10px;
+  color: var(--text-color);
+  background-color: var(--component-bg);
+  box-shadow: var(--box-shadou_JJ);
+}
+
+.ActivityView:hover {
+  box-shadow: var(--box-shadou_SJ);
+}
+
+.Pagelayer {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+</style>
